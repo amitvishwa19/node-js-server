@@ -6,7 +6,7 @@ const http = require('http');
 const mongoose = require('mongoose');
 const auth = require('./routes/v1/auth/auth');
 //const register = require('./routes/v1/auth/register');
-
+const router = express.Router()
 
 
 
@@ -28,7 +28,7 @@ const socket_port = process.env.SOCKET_PORT || 9000;
 const mongo_uri = process.env.MONGODB_URI;
 
 
-//app.use('/api/v1/auth', auth);
+app.use('/', auth);
 //app.use('/api/v1/auth/register', register);
 
 
