@@ -4,7 +4,7 @@ const cors = require('cors')
 const { Server } = require("socket.io");
 const http = require('http');
 const mongoose = require('mongoose');
-const auth = require('./routes/v1/auth/auth');
+//const auth = require('./routes/v1/auth/auth');
 //const register = require('./routes/v1/auth/register');
 const router = express.Router()
 
@@ -24,12 +24,16 @@ const io = new Server(server, {
 });
 
 const port = process.env.PORT || 8000;
-const socket_port = process.env.SOCKET_PORT || 9000;
+// const socket_port = process.env.SOCKET_PORT || 9000;
 const mongo_uri = process.env.MONGODB_URI;
 
 
-app.use('/', auth);
+
 //app.use('/api/v1/auth/register', register);
+
+app.get("/",(req,res,next)=>{ 
+    res.send("Welcome to node server") 
+}) 
 
 
 let onlineUsers = []
@@ -113,7 +117,7 @@ io.on('disconnect', () => {
 })
 
 server.listen(port, () => { console.log(`Servrt running on port ${port}`) });
-io.listen(socket_port)
+//io.listen(socket_port)
 
 mongoose.connect(mongo_uri, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => { console.log('Connected to MongoDB') })
