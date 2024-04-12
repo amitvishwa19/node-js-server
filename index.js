@@ -1,12 +1,32 @@
 require('dotenv').config()
 const express = require('express');
 const cors = require('cors')
-const { Server } = require("socket.io");
 const http = require('http');
+const parseUrl = require('body-parser');
+const cookieparser = require('cookie-parser')
 const mongoose = require('mongoose');
-//const auth = require('./routes/v1/auth/auth');
-//const register = require('./routes/v1/auth/register');
-const router = express.Router()
+const {
+    socetConnection,
+    handleConnectedUser,
+    handleNewChat,
+    handleNewMessage,
+    handleDisconnectedUser
+} = require('./services/socket');
+
+const authRoutes = require('./routes/v1/auth')
+
+
+const port = process.env.PORT || 8000;
+const mongo_uri = process.env.MONGODB_URI;
+
+
+
+
+
+
+
+
+
 
 
 
@@ -14,64 +34,39 @@ const router = express.Router()
 
 const app = express();
 app.use(express.json())
-app.use(cors({origin: ['http://localhost:3000', 'http://127.0.0.1:3000']}))
+app.use(cookieparser())
+app.use(cors({ origin: ['http://localhost:3000', 'http://127.0.0.1:3000'] }))
 const server = http.createServer(app);
-const io = new Server(server, {
-    cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
-    }
-});
 
-const port = process.env.PORT || 8000;
-// const socket_port = process.env.SOCKET_PORT || 9000;
-const mongo_uri = process.env.MONGODB_URI;
+
+
+let onlineUsers = []
+
+
 
 
 
 //app.use('/api/v1/auth/register', register);
 
-app.get("/",(req,res,next)=>{ 
-    res.send("Welcome to node server") 
-}) 
+app.use('/api/v1/auth/', authRoutes)
+
+app.get("/", (req, res, next) => {
+    res.send("Welcome to node server")
+})
 
 
-let onlineUsers = []
 
+const io = socetConnection(server)
 io.on('connection', (socket) => {
     console.log('client connected io-socket', socket.id)
 
-    socket.on('new-user', (user) => {
-        console.log('Adding onlineuser')
-        if (onlineUsers.findIndex(item => item.id === user?._id) === -1) {
-            onlineUsers.push({
-                uid: user?._id,
-                email: user?.email,
-                username: user?.username,
-                socketId: socket.id
-            })
-        }
-
-        io.emit('getOnlineUsers', onlineUsers)
-        io.emit('online-users', onlineUsers)
-
-        console.log('Online users from socket.io', onlineUsers)
-
-    })
+    handleConnectedUser(io, socket)
+    handleNewChat(io, socket)
+    handleNewMessage(io, socket)
+    handleDisconnectedUser(io, socket)
 
 
-    socket.on('new-message', (data) => {
-        console.log('new msg received on server')
-        //we get members from chat id and send message to all of them
-        //io.to(socketId).emit('getNewMessage',(data)=>{}) 
-        io.emit('new-message', data)
-    })
 
-
-    socket.on('new-chat', (data) => {
-        console.log('new chat received on server')
-        io.emit('new-chat', data)
-    })
 
 
     socket.on("room:join", (data) => {
@@ -102,12 +97,7 @@ io.on('connection', (socket) => {
     });
 
 
-    socket.on('disconnect', () => {
-        console.log('user disconnected', socket.id)
-        onlineUsers = onlineUsers.filter(user => user.socketId !== socket.id)
-        io.emit('getOnlineUsers', onlineUsers)
-        console.log('onlineUsers', onlineUsers)
-    })
+
 
 
 });
@@ -117,7 +107,7 @@ io.on('disconnect', () => {
 })
 
 server.listen(port, () => { console.log(`Servrt running on port ${port}`) });
-//io.listen(socket_port)
+
 
 mongoose.connect(mongo_uri, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => { console.log('Connected to MongoDB') })

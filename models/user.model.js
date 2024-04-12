@@ -4,33 +4,13 @@ const mongoose = require('mongoose')
 const userModel = new mongoose.Schema(
   {
     uid:String,
-    username: {
-      type: String, 
-      default: null,
-    },
-    displayName: {
-      type: String, 
-      default: null,
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    photoURL: {
-      type: String, 
-      default: null,
-    },
-    password: String,
-    emailVerified: {
-      type: Boolean,
-      required: false,
-      default: false
-    },
-    bio:{
-      type: String, 
-      default: null,
-    },
+    username: {type: String, default: null },
+    displayName: { type: String, default: null },
+    email: { type: String, required: true, unique: true },
+    photoURL: {  type: String,  default: null },
+    password: {type: String, required: true},
+    emailVerified: { type: Boolean, required: false, default: false },
+    bio:{ type: String, default: null },
     loginType:String,
     provider:String,
     mobileDeviceToken: String,
