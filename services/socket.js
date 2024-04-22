@@ -13,20 +13,18 @@ function socetConnection(server) {
 }
 
 function handleConnectedUser(io, socket) {
-    socket.on('new-user', (user) => {
-        console.log('Adding onlineuser')
-        if (onlineUsers.findIndex(item => item.id === user?._id) === -1) {
+    socket.on('online-user', ({ data }) => {
+        //console.log('Adding onlineuser', data)
+        if (onlineUsers.findIndex(item => item.id === data?.id) === -1) {
             onlineUsers.push({
-                uid: user?._id,
-                email: user?.email,
-                username: user?.username,
+                id: data?.id,
+                email: data?.email,
                 socketId: socket.id
             })
         }
-        io.emit('getOnlineUsers', onlineUsers)
         io.emit('online-users', onlineUsers)
 
-        console.log('Online users from socket.io', onlineUsers)
+        console.log('Online users from socket.io:socketserver->socket', onlineUsers.length)
 
     })
 }
